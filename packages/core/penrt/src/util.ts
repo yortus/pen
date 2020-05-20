@@ -80,3 +80,51 @@ function isInputFullyConsumed(): boolean {
 function isPlainObject(value: unknown): value is Record<string, unknown> {
     return value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype;
 }
+
+
+
+
+
+// TODO: temp testing...
+class SequenceBuilder {
+    result: any = undefined;
+    push(value: unknown) {
+        // TODO: simplify/optimise these type checks for speed - but perf test first
+        if (value === undefined) return;
+        let type = typeof value;
+        if (type === 'string') {
+            this.push = this.pushString;
+        }
+        else if (type === 'object' && value !== null && Object.getPrototypeOf(value) === Object.prototype) {
+            this.push = this.pushObject;
+        }
+        else if (Array.isArray(value)) {
+            this.push = this.pushArray;
+        }
+        else {
+            this.push = this.pushAtom;
+        }
+        this.result = value;
+    }
+    private pushString(value: string) {
+        if (value === undefined) return;
+        if (typeof value !== 'string') throw new Error('Invalid sequence');
+        this.result += value;
+    }
+    private pushObject(value: string) {
+        if (value === undefined) return;
+        if (!isPlainObject(value)) throw new Error('Invalid sequence');
+        Object.assign(this.result, value);
+    }
+    private pushArray(value: string) {
+        if (value === undefined) return;
+        if (!Array.isArray(value)) throw new Error('Invalid sequence');
+        for (let i = 0, len = value.length; i < len; ++i) {
+            this.result.push(value[i]);
+        }
+    }
+    private pushAtom(value: string) {
+        if (value === undefined) return;
+        throw new Error('Invalid sequence');
+    }
+}

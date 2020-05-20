@@ -287,13 +287,13 @@ function sequence(options) {
     return {
         rule: function SEQ() {
             let stateₒ = getState();
-            let out;
+            let sb = new SequenceBuilder();
             for (let i = 0; i < arity; ++i) {
                 if (!expressions[i].rule())
                     return setState(stateₒ), false;
-                out = concat(out, OUT);
+                sb.push(OUT);
             }
-            OUT = out;
+            OUT = sb.result;
             return true;
         },
     };
@@ -369,6 +369,57 @@ function isInputFullyConsumed() {
 }
 function isPlainObject(value) {
     return value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype;
+}
+class SequenceBuilder {
+    constructor() {
+        this.result = undefined;
+    }
+    push(value) {
+        if (value === undefined)
+            return;
+        let type = typeof value;
+        if (type === 'string') {
+            this.push = this.pushString;
+        }
+        else if (type === 'object' && value !== null && Object.getPrototypeOf(value) === Object.prototype) {
+            this.push = this.pushObject;
+        }
+        else if (Array.isArray(value)) {
+            this.push = this.pushArray;
+        }
+        else {
+            this.push = this.pushAtom;
+        }
+        this.result = value;
+    }
+    pushString(value) {
+        if (value === undefined)
+            return;
+        if (typeof value !== 'string')
+            throw new Error('Invalid sequence');
+        this.result += value;
+    }
+    pushObject(value) {
+        if (value === undefined)
+            return;
+        if (!isPlainObject(value))
+            throw new Error('Invalid sequence');
+        Object.assign(this.result, value);
+    }
+    pushArray(value) {
+        if (value === undefined)
+            return;
+        if (!Array.isArray(value))
+            throw new Error('Invalid sequence');
+        for (let i = 0, len = value.length; i < len; ++i) {
+            this.result.push(value[i]);
+        }
+    }
+    pushAtom(value) {
+        if (value === undefined)
+            return;
+        throw new Error('Invalid sequence');
+    }
 }
 function zeroOrMore(options) {
     const { expression } = options;

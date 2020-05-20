@@ -10,10 +10,6 @@ Optimisations to investigate:
 
 
 New TODOs May 2020:
-    [x] add a timed test for unparse so perf improvements can be roughly measured
-    [x] parse/unparse -> rule
-    [x] top-level exports = `parse` and `print`
-    [x] add pegjs JSON parser to large-json.test for comparison/reference
     [ ] don't pass IN/OUT everywhere
         [ ] needless complexity
         [ ] make them locals, like the other registers
@@ -22,15 +18,15 @@ New TODOs May 2020:
         [ ] rename them: `IN` -> `???`   `OUT` -> `???` eg INPUT_KIND, OUTPUT_KIND
     [ ] try optimisations for `sequence` and `selection`
         [ ] unroll loops:
-            sequence:
+            [x] sequence:
                 if (rule0()) out = concat(out, OUT); else return setState(stateₒ), false;
                 if (rule1()) out = concat(out, OUT); else return setState(stateₒ), false;
                 ...
                 return OUT = out, true;
-            selection:
+            [ ] selection:
                 return rule0() || rule1() || rule2() || ...
         [x] tried for `sequence`, but it is slightly *slower* for large-json test (see stash `experiment-eval-sequence`)
-        [ ] use `eval` to ensure every seq/sel rule instance is unique and has its own V8 optimisations applies
+        [ ] use `eval` to ensure every seq/sel rule instance is unique and has its own V8 optimisations applied
     [ ] helpers around *all* register get/set access
     [ ] helpers to work with input, eg generalised `match` helper(s), `typeOf`, etc
     [ ] force IN to always be set through a helper method, and cache info about it - eg type = string|array|object|other
@@ -40,7 +36,11 @@ New TODOs May 2020:
         [x] character
         [x] stringLiteral
         [x] TODO: list others...
-
+    [x] add a timed test for unparse so perf improvements can be roughly measured
+    [x] parse/unparse -> rule
+    [x] top-level exports = `parse` and `print`
+    [x] add pegjs JSON parser to large-json.test for comparison/reference
+    
 TODO 2020:
     [x] unparse --> print
     [x] `float64` --> `f64`

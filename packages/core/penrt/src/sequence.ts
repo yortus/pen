@@ -5,12 +5,12 @@ function sequence(options: StaticOptions & {expressions: PenVal[]}): PenVal {
     return {
         rule: function SEQ() {
             let stateₒ = getState();
-            let out: unknown;
+            let sb = new SequenceBuilder();
             for (let i = 0; i < arity; ++i) {
                 if (!expressions[i].rule!()) return setState(stateₒ), false;
-                out = concat(out, OUT);
+                sb.push(OUT);
             }
-            OUT = out;
+            OUT = sb.result;
             return true;
         },
     };
