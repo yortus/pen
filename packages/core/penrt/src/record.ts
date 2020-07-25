@@ -20,7 +20,7 @@ function record({mode, fields}: StaticOptions & {fields: Array<{name: string, va
         return function RCD() {
             if (objectToString.call(IN) !== '[object Object]') return false;
             let stateₒ = getState();
-            let text: unknown;
+            let textParts = [] as unknown[];
 
             let propNames = Object.keys(IN as any); // TODO: doc reliance on prop order and what this means
             let propCount = propNames.length;
@@ -45,13 +45,13 @@ function record({mode, fields}: StaticOptions & {fields: Array<{name: string, va
                 setState({IN: obj[propName], IP: 0});
                 if (!field.value()) return setState(stateₒ), false;
                 if (!isInputFullyConsumed()) return setState(stateₒ), false;
-                text = concat(text, OUT);
+                if (OUT !== undefined) textParts.push(OUT);
 
                 // TODO: we matched both name and value - consume them from `node`
                 bitmask += propBit;
             }
             setState({IN: obj, IP: bitmask});
-            OUT = text;
+            OUT = concatAll(textParts);
             return true;
         };
     }

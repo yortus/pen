@@ -22,7 +22,7 @@ function field({ mode, name, value }) {
             if (objectToString.call(IN) !== '[object Object]')
                 return false;
             let stateₒ = getState();
-            let text;
+            let textParts = [];
             let propNames = Object.keys(IN);
             let propCount = propNames.length;
             assert(propCount <= 32);
@@ -38,16 +38,18 @@ function field({ mode, name, value }) {
                     continue;
                 if (IP !== propName.length)
                     continue;
-                text = concat(text, OUT);
+                if (OUT !== undefined)
+                    textParts.push(OUT);
                 setState({ IN: obj[propName], IP: 0 });
                 if (!value())
                     continue;
                 if (!isInputFullyConsumed())
                     continue;
-                text = concat(text, OUT);
+                if (OUT !== undefined)
+                    textParts.push(OUT);
                 bitmask += propBit;
                 setState({ IN: obj, IP: bitmask });
-                OUT = text;
+                OUT = concatAll(textParts);
                 return true;
             }
             setState(stateₒ);
@@ -78,7 +80,7 @@ function list({ mode, elements }) {
             if (IP < 0 || IP + elementsLength > IN.length)
                 return false;
             let stateₒ = getState();
-            let text;
+            let textParts = [];
             const arr = IN;
             const off = IP;
             for (let i = 0; i < elementsLength; ++i) {
@@ -87,10 +89,11 @@ function list({ mode, elements }) {
                     return setState(stateₒ), false;
                 if (!isInputFullyConsumed())
                     return setState(stateₒ), false;
-                text = concat(text, OUT);
+                if (OUT !== undefined)
+                    textParts.push(OUT);
             }
             setState({ IN: arr, IP: off + elementsLength });
-            OUT = text;
+            OUT = concatAll(textParts);
             return true;
         };
     }
@@ -116,7 +119,7 @@ function record({ mode, fields }) {
             if (objectToString.call(IN) !== '[object Object]')
                 return false;
             let stateₒ = getState();
-            let text;
+            let textParts = [];
             let propNames = Object.keys(IN);
             let propCount = propNames.length;
             assert(propCount <= 32);
@@ -135,11 +138,12 @@ function record({ mode, fields }) {
                     return setState(stateₒ), false;
                 if (!isInputFullyConsumed())
                     return setState(stateₒ), false;
-                text = concat(text, OUT);
+                if (OUT !== undefined)
+                    textParts.push(OUT);
                 bitmask += propBit;
             }
             setState({ IN: obj, IP: bitmask });
-            OUT = text;
+            OUT = concatAll(textParts);
             return true;
         };
     }
@@ -179,20 +183,18 @@ function assert(value) {
     if (!value)
         throw new Error(`Assertion failed`);
 }
-function concat(a, b) {
-    if (a === undefined)
-        return b;
-    if (b === undefined)
-        return a;
-    let type = objectToString.call(a);
-    if (type !== objectToString.call(b))
-        throw new Error(`Internal error: invalid sequence`);
+function concatAll(parts) {
+    if (parts.length === 0)
+        return undefined;
+    if (parts.length === 1)
+        return parts[0];
+    let type = objectToString.call(parts[0]);
     if (type === '[object String]')
-        return a + b;
+        return parts.join('');
     if (type === '[object Array]')
-        return [...a, ...b];
+        return [].concat(...parts);
     if (type === '[object Object]')
-        return Object.assign(Object.assign({}, a), b);
+        return Object.assign({}, ...parts);
     throw new Error(`Internal error: invalid sequence`);
 }
 function isInputFullyConsumed() {
@@ -623,10 +625,10 @@ const parse = (() => {
     // SequenceExpression
     function id7() {
         let stateₒ = getState();
-        let out;
-        if (id8()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id9()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id8()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id9()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -659,11 +661,11 @@ const parse = (() => {
     // SequenceExpression
     function id11() {
         let stateₒ = getState();
-        let out;
-        if (id12()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id15()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id16()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id12()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id15()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id16()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -728,10 +730,10 @@ const parse = (() => {
     // SequenceExpression
     function id18() {
         let stateₒ = getState();
-        let out;
-        if (id19()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id20()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id19()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id20()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -758,11 +760,11 @@ const parse = (() => {
     // SequenceExpression
     function id21() {
         let stateₒ = getState();
-        let out;
-        if (id22()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id24()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id26()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id22()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id24()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id26()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -811,10 +813,10 @@ const parse = (() => {
     // SequenceExpression
     function id27() {
         let stateₒ = getState();
-        let out;
-        if (id28()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id29()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id28()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id29()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -865,10 +867,10 @@ const parse = (() => {
     // SequenceExpression
     function id34() {
         let stateₒ = getState();
-        let out;
-        if (id35()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id36()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id35()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id36()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -910,10 +912,10 @@ const parse = (() => {
     // SequenceExpression
     function id39() {
         let stateₒ = getState();
-        let out;
-        if (id40()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id41()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id40()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id41()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -946,11 +948,11 @@ const parse = (() => {
     // SequenceExpression
     function id43() {
         let stateₒ = getState();
-        let out;
-        if (id44()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id1()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id45()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id44()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id1()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id45()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -999,10 +1001,10 @@ const parse = (() => {
     // SequenceExpression
     function id48() {
         let stateₒ = getState();
-        let out;
-        if (id49()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id20()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id49()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id20()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -1041,10 +1043,10 @@ const parse = (() => {
     // SequenceExpression
     function id52() {
         let stateₒ = getState();
-        let out;
-        if (id53()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id9()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id53()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id9()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -1122,10 +1124,10 @@ const print = (() => {
     // SequenceExpression
     function id7() {
         let stateₒ = getState();
-        let out;
-        if (id8()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id9()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id8()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id9()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -1155,11 +1157,11 @@ const print = (() => {
     // SequenceExpression
     function id11() {
         let stateₒ = getState();
-        let out;
-        if (id12()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id15()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id16()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id12()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id15()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id16()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -1243,10 +1245,10 @@ const print = (() => {
     // SequenceExpression
     function id18() {
         let stateₒ = getState();
-        let out;
-        if (id19()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id20()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id19()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id20()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -1270,11 +1272,11 @@ const print = (() => {
     // SequenceExpression
     function id21() {
         let stateₒ = getState();
-        let out;
-        if (id22()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id24()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id26()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id22()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id24()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id26()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -1325,10 +1327,10 @@ const print = (() => {
     // SequenceExpression
     function id27() {
         let stateₒ = getState();
-        let out;
-        if (id28()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id29()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id28()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id29()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -1379,10 +1381,10 @@ const print = (() => {
     // SequenceExpression
     function id34() {
         let stateₒ = getState();
-        let out;
-        if (id35()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id36()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id35()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id36()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -1422,10 +1424,10 @@ const print = (() => {
     // SequenceExpression
     function id39() {
         let stateₒ = getState();
-        let out;
-        if (id40()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id41()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id40()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id41()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -1455,11 +1457,11 @@ const print = (() => {
     // SequenceExpression
     function id43() {
         let stateₒ = getState();
-        let out;
-        if (id44()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id1()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id45()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id44()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id1()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id45()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -1508,10 +1510,10 @@ const print = (() => {
     // SequenceExpression
     function id48() {
         let stateₒ = getState();
-        let out;
-        if (id49()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id20()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id49()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id20()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 
@@ -1553,10 +1555,10 @@ const print = (() => {
     // SequenceExpression
     function id52() {
         let stateₒ = getState();
-        let out;
-        if (id53()) out = concat(out, OUT); else return setState(stateₒ), false;
-        if (id9()) out = concat(out, OUT); else return setState(stateₒ), false;
-        OUT = out;
+        let out = [];
+        if (id53()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        if (id9()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;
+        OUT = concatAll(out);
         return true;
     }
 

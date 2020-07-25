@@ -22,17 +22,17 @@ function list({mode, elements}: StaticOptions & {elements: Rule[]}): Rule {
             if (IP < 0 || IP + elementsLength > IN.length) return false;
 
             let stateₒ = getState();
-            let text: unknown;
+            let textParts = [] as unknown[];
             const arr = IN;
             const off = IP;
             for (let i = 0; i < elementsLength; ++i) {
                 setState({IN: arr[off + i], IP: 0});
                 if (!elements[i]()) return setState(stateₒ), false;
                 if (!isInputFullyConsumed()) return setState(stateₒ), false;
-                text = concat(text, OUT);
+                if (OUT !== undefined) textParts.push(OUT);
             }
             setState({IN: arr, IP: off + elementsLength});
-            OUT = text;
+            OUT = concatAll(textParts);
             return true;
         };
     }

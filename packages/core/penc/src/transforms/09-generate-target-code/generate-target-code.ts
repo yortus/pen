@@ -239,13 +239,13 @@ function emitExpression(emit: Emitter, name: string, expr: Expression, mode: Mod
             }
             else /* expr.quantifier === '*' */ {
                 emit.down(1).text(`let IPₒ = IP;`);
-                emit.down(1).text(`let out;`);
+                emit.down(1).text(`let outParts = [];`);
                 emit.down(1).text(`do {`).indent();
                 emit.down(1).text(`if (!${expr.expression.name}()) break;`);
                 emit.down(1).text(`if (IP === IPₒ) break;`);
-                emit.down(1).text(`out = concat(out, OUT);`);
+                emit.down(1).text(`if (OUT !== undefined) outParts.push(OUT);`);
                 emit.dedent().down(1).text(`} while (true);`);
-                emit.down(1).text(`OUT = out;`);
+                emit.down(1).text(`OUT = concatAll(outParts);`);
             }
             emit.down(1).text(`return true;`);
             emit.dedent().down(1).text('}');
@@ -293,11 +293,11 @@ function emitExpression(emit: Emitter, name: string, expr: Expression, mode: Mod
             const exprVars = expr.expressions.map(e => { assert(e.kind === 'ReferenceExpression'); return e.name; });
             emit.down(1).text(`function ${name}() {`).indent();
             emit.down(1).text('let stateₒ = getState();');
-            emit.down(1).text('let out;');
+            emit.down(1).text('let out = [];');
             for (let i = 0; i < arity; ++i) {
-                emit.down(1).text(`if (${exprVars[i]}()) out = concat(out, OUT); else return setState(stateₒ), false;`);
+                emit.down(1).text(`if (${exprVars[i]}()) { if (OUT !== undefined) out.push(OUT) } else return setState(stateₒ), false;`);
             }
-            emit.down(1).text('OUT = out;');
+            emit.down(1).text('OUT = concatAll(out);');
             emit.down(1).text('return true;');
             emit.dedent().down(1).text('}');
             break;

@@ -22,7 +22,7 @@ function field({mode, name, value}: StaticOptions & {name: Rule, value: Rule}): 
         return function FLD() {
             if (objectToString.call(IN) !== '[object Object]') return false;
             let stateₒ = getState();
-            let text: unknown;
+            let textParts = [] as unknown[];
 
             let propNames = Object.keys(IN as any); // TODO: doc reliance on prop order and what this means
             let propCount = propNames.length;
@@ -44,18 +44,18 @@ function field({mode, name, value}: StaticOptions & {name: Rule, value: Rule}): 
                 setState({IN: propName, IP: 0});
                 if (!name()) continue;
                 if (IP !== propName.length) continue;
-                text = concat(text, OUT);
+                if (OUT !== undefined) textParts.push(OUT);
 
                 // TODO: match field value
                 setState({IN: obj[propName], IP: 0});
                 if (!value()) continue;
                 if (!isInputFullyConsumed()) continue;
-                text = concat(text, OUT);
+                if (OUT !== undefined) textParts.push(OUT);
 
                 // TODO: we matched both name and value - consume them from `node`
                 bitmask += propBit;
                 setState({IN: obj, IP: bitmask});
-                OUT = text;
+                OUT = concatAll(textParts);
                 return true;
             }
 

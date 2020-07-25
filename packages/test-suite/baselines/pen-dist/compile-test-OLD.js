@@ -22,7 +22,7 @@ function field({ mode, name, value }) {
             if (objectToString.call(IN) !== '[object Object]')
                 return false;
             let stateₒ = getState();
-            let text;
+            let textParts = [];
             let propNames = Object.keys(IN);
             let propCount = propNames.length;
             assert(propCount <= 32);
@@ -38,16 +38,18 @@ function field({ mode, name, value }) {
                     continue;
                 if (IP !== propName.length)
                     continue;
-                text = concat(text, OUT);
+                if (OUT !== undefined)
+                    textParts.push(OUT);
                 setState({ IN: obj[propName], IP: 0 });
                 if (!value())
                     continue;
                 if (!isInputFullyConsumed())
                     continue;
-                text = concat(text, OUT);
+                if (OUT !== undefined)
+                    textParts.push(OUT);
                 bitmask += propBit;
                 setState({ IN: obj, IP: bitmask });
-                OUT = text;
+                OUT = concatAll(textParts);
                 return true;
             }
             setState(stateₒ);
@@ -78,7 +80,7 @@ function list({ mode, elements }) {
             if (IP < 0 || IP + elementsLength > IN.length)
                 return false;
             let stateₒ = getState();
-            let text;
+            let textParts = [];
             const arr = IN;
             const off = IP;
             for (let i = 0; i < elementsLength; ++i) {
@@ -87,10 +89,11 @@ function list({ mode, elements }) {
                     return setState(stateₒ), false;
                 if (!isInputFullyConsumed())
                     return setState(stateₒ), false;
-                text = concat(text, OUT);
+                if (OUT !== undefined)
+                    textParts.push(OUT);
             }
             setState({ IN: arr, IP: off + elementsLength });
-            OUT = text;
+            OUT = concatAll(textParts);
             return true;
         };
     }
@@ -116,7 +119,7 @@ function record({ mode, fields }) {
             if (objectToString.call(IN) !== '[object Object]')
                 return false;
             let stateₒ = getState();
-            let text;
+            let textParts = [];
             let propNames = Object.keys(IN);
             let propCount = propNames.length;
             assert(propCount <= 32);
@@ -135,11 +138,12 @@ function record({ mode, fields }) {
                     return setState(stateₒ), false;
                 if (!isInputFullyConsumed())
                     return setState(stateₒ), false;
-                text = concat(text, OUT);
+                if (OUT !== undefined)
+                    textParts.push(OUT);
                 bitmask += propBit;
             }
             setState({ IN: obj, IP: bitmask });
-            OUT = text;
+            OUT = concatAll(textParts);
             return true;
         };
     }
@@ -179,20 +183,18 @@ function assert(value) {
     if (!value)
         throw new Error(`Assertion failed`);
 }
-function concat(a, b) {
-    if (a === undefined)
-        return b;
-    if (b === undefined)
-        return a;
-    let type = objectToString.call(a);
-    if (type !== objectToString.call(b))
-        throw new Error(`Internal error: invalid sequence`);
+function concatAll(parts) {
+    if (parts.length === 0)
+        return undefined;
+    if (parts.length === 1)
+        return parts[0];
+    let type = objectToString.call(parts[0]);
     if (type === '[object String]')
-        return a + b;
+        return parts.join('');
     if (type === '[object Array]')
-        return [...a, ...b];
+        return [].concat(...parts);
     if (type === '[object Object]')
-        return Object.assign(Object.assign({}, a), b);
+        return Object.assign({}, ...parts);
     throw new Error(`Internal error: invalid sequence`);
 }
 function isInputFullyConsumed() {

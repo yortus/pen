@@ -69,15 +69,29 @@ function assert(value: unknown): asserts value {
 // TODO: doc... helper...
 // TODO: provide faster impl for known cases - eg when unparsing to text, don't need array/object handling
 //       (but instrument first)
-function concat(a: any, b: any): unknown {
-    if (a === undefined) return b;
-    if (b === undefined) return a;
-    let type = objectToString.call(a);
-    // TODO: if program is statically proven valid, the following guard isn't necessary
-    if (type !== objectToString.call(b)) throw new Error(`Internal error: invalid sequence`);
-    if (type === '[object String]') return a + b;
-    if (type === '[object Array]') return [...a, ...b];
-    if (type === '[object Object]') return {...a, ...b};
+// function concat(a: any, b: any): unknown {
+//     if (a === undefined) return b;
+//     if (b === undefined) return a;
+//     let type = objectToString.call(a);
+//     // TODO: if program is statically proven valid, the following guard isn't necessary
+//     if (type !== objectToString.call(b)) throw new Error(`Internal error: invalid sequence`);
+//     if (type === '[object String]') return a + b;
+//     if (type === '[object Array]') return [...a, ...b];
+//     if (type === '[object Object]') return {...a, ...b};
+//     // TODO: if program is statically proven valid, the following guard isn't necessary
+//     throw new Error(`Internal error: invalid sequence`);
+// }
+
+
+// TODO: tempt testing...
+function concatAll(parts: unknown[]): unknown {
+    if (parts.length === 0) return undefined;
+    if (parts.length === 1) return parts[0];
+    let type = objectToString.call(parts[0]);
+    // TODO: until program is statically proven valid, should also check all elems have the same type
+    if (type === '[object String]') return parts.join('');
+    if (type === '[object Array]') return [].concat(...parts as any);
+    if (type === '[object Object]') return Object.assign({}, ...parts);
     // TODO: if program is statically proven valid, the following guard isn't necessary
     throw new Error(`Internal error: invalid sequence`);
 }
